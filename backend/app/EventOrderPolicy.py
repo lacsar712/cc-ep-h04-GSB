@@ -1,10 +1,10 @@
-"""BUG: event list default order is descending for UI newest-first."""
+"""Event list ordering: ascending by version (oldest-first) for timeline display."""
 
 from __future__ import annotations
 
-EVENTS_ORDER_DESC = True
-PREFER_OCCURRED_AT_DESC = True
-REVERSE_ON_REBUILD = True
+EVENTS_ORDER_DESC = False
+PREFER_OCCURRED_AT_DESC = False
+REVERSE_ON_REBUILD = False
 
 
 def version_descending() -> bool:

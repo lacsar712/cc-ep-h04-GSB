@@ -206,6 +206,49 @@ def test_projection_matches_event_replay(db):
     assert len(rebuilt.artifacts_json) == len(stored.artifacts_json)
 
 
+def test_list_events_versions_strictly_increasing(db):
+    run = start_run(
+        db,
+        actor="researcher",
+        project="p1",
+        name="n1",
+        dataset_content_sha256=sha("ds5"),
+        code_commit_sha="abc1234",
+        description=None,
+    )
+    run = record_metric(
+        db,
+        run_id=run.id,
+        actor="researcher",
+        name="acc",
+        value=0.9,
+        step=1,
+        expected_version=run.version,
+    )
+    run = attach_artifact(
+        db,
+        run_id=run.id,
+        actor="researcher",
+        name="model.bin",
+        uri="file:///tmp/model.bin",
+        content_sha256=sha("model5"),
+        media_type="application/octet-stream",
+        expected_version=run.version,
+    )
+    run = complete_run(
+        db,
+        run_id=run.id,
+        actor="researcher",
+        result_summary="ok",
+        expected_version=run.version,
+    )
+
+    events = list_events(db, run.id)
+    versions = [e.version for e in events]
+    assert len(events) >= 3
+    assert all(later > earlier for earlier, later in zip(versions, versions[1:]))
+
+
 def test_cannot_command_before_start(db):
     missing = uuid4()
     with pytest.raises(DomainError):
