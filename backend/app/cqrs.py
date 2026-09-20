@@ -301,15 +301,14 @@ def abort_run(
 
 
 def list_events(db: Session, run_id: UUID) -> list[EventStore]:
-    from app.EventOrderPolicy import order_events, version_descending
-
-    stmt = select(EventStore).where(EventStore.aggregate_id == run_id)
-    if version_descending():
-        stmt = stmt.order_by(EventStore.version.desc())
-    else:
-        stmt = stmt.order_by(EventStore.version.asc())
-    rows = list(db.scalars(stmt).all())
-    return order_events(rows)
+    # Events are always read in strictly ascending version order so the
+    # timeline and projection replay go oldest-first.
+    stmt = (
+        select(EventStore)
+        .where(EventStore.aggregate_id == run_id)
+        .order_by(EventStore.version.asc())
+    )
+    return list(db.scalars(stmt).all())
 
 
 def rebuild_projection_from_events(db: Session, run_id: UUID) -> RunProjection | None:

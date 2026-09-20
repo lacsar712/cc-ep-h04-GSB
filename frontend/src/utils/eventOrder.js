@@ -1,7 +1,7 @@
-/** BUG: newest-first presentation regardless of API. */
+/** Present events in the same order the API returns them: ascending by version. */
 export function presentEvents(events) {
   const list = Array.isArray(events) ? [...events] : []
-  list.sort((a, b) => (b.version || 0) - (a.version || 0))
+  list.sort((a, b) => (a.version || 0) - (b.version || 0))
   return list
 }
 
